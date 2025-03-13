@@ -10,11 +10,13 @@ import asyncio
 from aiogram import Bot, Dispatcher
 
 TOKEN = "7555186524:AAFEzYntKmlU7NtjD9D63iuSeW6OuX7XoCk"
+
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
 
 async def main():
-    await dp.start_polling(bot, drop_pending_updates=True)
+    await bot.delete_webhook(drop_pending_updates=True)  # Очищаем старые обновления
+    await dp.start_polling(bot)  # Убираем drop_pending_updates отсюда
 
 if __name__ == "__main__":
     asyncio.run(main())
