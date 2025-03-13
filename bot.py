@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 import asyncio
 from aiogram import Bot, Dispatcher
 
-TOKEN = "твой_токен"
+TOKEN = "7555186524:AAFEzYntKmlU7NtjD9D63iuSeW6OuX7XoCk"
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
