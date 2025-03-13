@@ -6,6 +6,8 @@ from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.utils import executor
 from dotenv import load_dotenv
 
+await dp.start_polling(bot, drop_pending_updates=True)
+
 # Загружаем токен из .env
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
