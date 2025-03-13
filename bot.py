@@ -64,15 +64,19 @@ async def get_delivery(message: types.Message):
 @dp.message()
 async def get_address(message: types.Message):
     user_id = message.from_user.id
+    
+    if user_id not in user_data:
+        user_data[user_id] = {}  # Создаем запись для нового пользователя
+    
     user_data[user_id]['address'] = message.text
 
     # Формируем текст заказа
     order_text = (
         f"📌 Новый заказ!\n"
-        f"📞 Телефон: {user_data[user_id]['phone']}\n"
-        f"💳 Оплата: {user_data[user_id]['payment']}\n"
-        f"☕ Заказ: {user_data[user_id]['order']}\n"
-        f"🚚 Доставка: {user_data[user_id]['delivery']}\n"
+        f"📞 Телефон: {user_data[user_id].get('phone', 'Не указан')}\n"
+        f"💳 Оплата: {user_data[user_id].get('payment', 'Не указана')}\n"
+        f"☕ Заказ: {user_data[user_id].get('order', 'Не указан')}\n"
+        f"🚚 Доставка: {user_data[user_id].get('delivery', 'Не указана')}\n"
         f"🏠 Адрес: {user_data[user_id]['address']}"
     )
 
