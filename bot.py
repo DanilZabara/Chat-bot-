@@ -11,7 +11,7 @@ from aiogram import Bot, Dispatcher
 
 TOKEN = "7555186524:AAFEzYntKmlU7NtjD9D63iuSeW6OuX7XoCk"
 bot = Bot(token=TOKEN)
-dp = Dispatcher()
+dp = Dispatcher(bot)
 
 async def main():
     await dp.start_polling(bot, drop_pending_updates=True)
