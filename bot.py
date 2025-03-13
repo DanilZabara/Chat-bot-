@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 # Загружаем переменные окружения
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
-ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))  # Приводим к int
+ADMIN_ID = os.getenv("ADMIN_ID")
 
 # Настраиваем логирование
 logging.basicConfig(level=logging.INFO)
@@ -17,49 +17,56 @@ logging.basicConfig(level=logging.INFO)
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# Кнопки
-btn_phone = KeyboardButton("📞 Отправить номер", request_contact=True)
-btn_fop = KeyboardButton("ФОП")
-btn_tov = KeyboardButton("ТОВ")
-btn_raben = KeyboardButton("Рабен")
-btn_nova_poshta = KeyboardButton("Новая Почта")
+# Создаем кнопки
+btn_phone = KeyboardButton(text="📞 Отправить номер", request_contact=True)
+btn_fop = KeyboardButton(text="ФОП")
+btn_tov = KeyboardButton(text="ТОВ")
+btn_raben = KeyboardButton(text="Рабен")
+btn_nova_poshta = KeyboardButton(text="Новая Почта")
 
 # Глобальная переменная для хранения данных
 user_data = {}
 
+# Начальное меню
 @dp.message(lambda message: message.text == "/start")
 async def start(message: types.Message):
     user_data[message.from_user.id] = {}
-    markup = ReplyKeyboardMarkup(resize_keyboard=True).add(btn_phone)
+    markup = ReplyKeyboardMarkup(keyboard=[[btn_phone]], resize_keyboard=True)
     await message.answer("Привет! Отправь мне свой номер телефона 📞", reply_markup=markup)
 
-@dp.message(lambda message: message.contact)
+# Получаем номер телефона
+@dp.message(lambda message: message.contact is not None)
 async def get_phone(message: types.Message):
     user_data[message.from_user.id]['phone'] = message.contact.phone_number
-    markup = ReplyKeyboardMarkup(resize_keyboard=True).add(btn_fop, btn_tov)
+    markup = ReplyKeyboardMarkup(keyboard=[[btn_fop, btn_tov]], resize_keyboard=True)
     await message.answer("Выбери тип оплаты:", reply_markup=markup)
 
+# Выбор ФОП/ТОВ
 @dp.message(lambda message: message.text in ["ФОП", "ТОВ"])
 async def get_payment_type(message: types.Message):
     user_data[message.from_user.id]['payment'] = message.text
     await message.answer("Напиши название зерна и количество (пример: 'Арабика - 2 кг')")
 
+# Получаем заказ
 @dp.message(lambda message: "-" in message.text)
 async def get_order(message: types.Message):
     user_data[message.from_user.id]['order'] = message.text
-    markup = ReplyKeyboardMarkup(resize_keyboard=True).add(btn_raben, btn_nova_poshta)
+    markup = ReplyKeyboardMarkup(keyboard=[[btn_raben, btn_nova_poshta]], resize_keyboard=True)
     await message.answer("Выбери службу доставки:", reply_markup=markup)
 
+# Выбор доставки
 @dp.message(lambda message: message.text in ["Рабен", "Новая Почта"])
 async def get_delivery(message: types.Message):
     user_data[message.from_user.id]['delivery'] = message.text
     await message.answer("Отправь адрес доставки (город, улица, номер дома)")
 
+# Получение адреса и отправка админу
 @dp.message()
 async def get_address(message: types.Message):
     user_id = message.from_user.id
     user_data[user_id]['address'] = message.text
 
+    # Формируем текст заказа
     order_text = (
         f"📌 Новый заказ!\n"
         f"📞 Телефон: {user_data[user_id]['phone']}\n"
@@ -69,11 +76,13 @@ async def get_address(message: types.Message):
         f"🏠 Адрес: {user_data[user_id]['address']}"
     )
 
-    await bot.send_message(ADMIN_ID, order_text)
+    # Отправляем админу
+    await bot.send_message(chat_id=ADMIN_ID, text=order_text)
     await message.answer("✅ Заказ принят! Мы скоро свяжемся с вами.")
 
+# Запуск бота
 async def main():
-    await bot.delete_webhook(drop_pending_updates=True)  # Удаляем вебхук
+    await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
