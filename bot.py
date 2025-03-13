@@ -6,7 +6,18 @@ from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.utils import executor
 from dotenv import load_dotenv
 
-await dp.start_polling(bot, drop_pending_updates=True)
+import asyncio
+from aiogram import Bot, Dispatcher
+
+TOKEN = "твой_токен"
+bot = Bot(token=TOKEN)
+dp = Dispatcher()
+
+async def main():
+    await dp.start_polling(bot, drop_pending_updates=True)
+
+if __name__ == "__main__":
+    asyncio.run(main())
 
 # Загружаем токен из .env
 load_dotenv()
