@@ -1,31 +1,16 @@
 import os
 import logging
+import asyncio
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.utils import executor
 from dotenv import load_dotenv
 
-    
-import asyncio
-from aiogram import Bot, Dispatcher
-
-TOKEN = "7555186524:AAFEzYntKmlU7NtjD9D63iuSeW6OuX7XoCk"
-
-bot = Bot(token=TOKEN)
-dp = Dispatcher(bot)
-
-async def main():
-    await bot.delete_webhook(drop_pending_updates=True)  # Очищаем старые обновления
-     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())  # Убираем drop_pending_updates отсюда
-
-if __name__ == "__main__":
-    asyncio.run(main())
-
-# Загружаем токен из .env
+# Загружаем переменные окружения
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
-ADMIN_ID = os.getenv("ADMIN_ID")
+ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))  # Приводим к int (на случай, если .env отсутствует)
 
 # Настраиваем логирование
 logging.basicConfig(level=logging.INFO)
@@ -67,37 +52,4 @@ async def get_payment_type(message: types.Message):
 
 # Получаем заказ
 @dp.message_handler(lambda message: "-" in message.text)
-async def get_order(message: types.Message):
-    user_data[message.from_user.id]['order'] = message.text
-    markup = ReplyKeyboardMarkup(resize_keyboard=True).add(btn_raben, btn_nova_poshta)
-    await message.answer("Выбери службу доставки:", reply_markup=markup)
-
-# Выбор доставки
-@dp.message_handler(lambda message: message.text in ["Рабен", "Новая Почта"])
-async def get_delivery(message: types.Message):
-    user_data[message.from_user.id]['delivery'] = message.text
-    await message.answer("Отправь адрес доставки (город, улица, номер дома)")
-
-# Получение адреса и отправка админу
-@dp.message_handler()
-async def get_address(message: types.Message):
-    user_id = message.from_user.id
-    user_data[user_id]['address'] = message.text
-
-    # Формируем текст заказа
-    order_text = (
-        f"📌 Новый заказ!\n"
-        f"📞 Телефон: {user_data[user_id]['phone']}\n"
-        f"💳 Оплата: {user_data[user_id]['payment']}\n"
-        f"☕ Заказ: {user_data[user_id]['order']}\n"
-        f"🚚 Доставка: {user_data[user_id]['delivery']}\n"
-        f"🏠 Адрес: {user_data[user_id]['address']}"
-    )
-
-    # Отправляем админу
-    await bot.send_message(ADMIN_ID, order_text)
-    await message.answer("✅ Заказ принят! Мы скоро свяжемся с вами.")
-
-# Запуск бота
-if __name__ == '__main__':
-    executor.start_polling(dp, skip_updates=True)
+a
