@@ -6,6 +6,7 @@ from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.utils import executor
 from dotenv import load_dotenv
 
+    
 import asyncio
 from aiogram import Bot, Dispatcher
 
@@ -16,7 +17,7 @@ dp = Dispatcher(bot)
 
 async def main():
     await bot.delete_webhook(drop_pending_updates=True)  # Очищаем старые обновления
-    await dp.start_polling(bot)  # Убираем drop_pending_updates отсюда
+     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())  # Убираем drop_pending_updates отсюда
 
 if __name__ == "__main__":
     asyncio.run(main())
