@@ -1,6 +1,7 @@
-import os
+import os 
 import logging
 import asyncio
+from datetime import datetime
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from dotenv import load_dotenv
@@ -23,14 +24,19 @@ btn_fop = KeyboardButton(text="ФОП")
 btn_tov = KeyboardButton(text="ТОВ")
 btn_raben = KeyboardButton(text="Рабен")
 btn_nova_poshta = KeyboardButton(text="Нова Пошта")
+btn_new_order = KeyboardButton(text="🆕 Оформити нове замовлення")
 
 # Глобальная переменная для хранения данных
 user_data = {}
 
+# Функция для генерации номера заказа
+def generate_order_number():
+    return datetime.now().strftime("%Y%m%d%H%M%S")
+
 # Начальное меню
-@dp.message(lambda message: message.text == "/start")
+@dp.message(lambda message: message.text == "/start" or message.text == "🆕 Оформити нове замовлення")
 async def start(message: types.Message):
-    user_data[message.from_user.id] = {}
+    user_data[message.from_user.id] = {}  # Очищаем предыдущие данные
     markup = ReplyKeyboardMarkup(keyboard=[[btn_phone]], resize_keyboard=True)
     await message.answer("Вітаю! Надайте ваш номер телефону 📞", reply_markup=markup)
 
@@ -45,7 +51,13 @@ async def get_phone(message: types.Message):
 @dp.message(lambda message: message.text in ["ФОП", "ТОВ"])
 async def get_payment_type(message: types.Message):
     user_data[message.from_user.id]['payment'] = message.text
-    await message.answer("Яку каву бажаєте замовити? Пропишіть назву та кількість зерна в кг. (приклад: 'Бразилія Черадо 1020 кг')")
+    await message.answer("Напишіть, на кого виставити рахунок (назва компанії або ПІБ)")
+
+# Получаем название компании
+@dp.message(lambda message: message.text and message.from_user.id in user_data and 'payment' in user_data[message.from_user.id])
+async def get_company_name(message: types.Message):
+    user_data[message.from_user.id]['company'] = message.text
+    await message.answer("Яку каву бажаєте замовити? Пропишіть назву та кількість зерна в кг. (приклад: 'Бразилія Черадо - 2 кг')")
 
 # Получаем заказ
 @dp.message(lambda message: "-" in message.text)
@@ -69,25 +81,13 @@ async def get_address(message: types.Message):
         user_data[user_id] = {}  # Создаем запись для нового пользователя
     
     user_data[user_id]['address'] = message.text
+    order_number = generate_order_number()
+    user_data[user_id]['order_number'] = order_number  # Сохраняем номер заказа
 
     # Формируем текст заказа
     order_text = (
-        f"📌 Нове замовлення!\n"
+        f"📌 Нове замовлення #{order_number}\n"
         f"📞 Телефон: {user_data[user_id].get('phone', 'Не указан')}\n"
         f"💳 Оплата: {user_data[user_id].get('payment', 'Не указана')}\n"
-        f"☕ Замовлення: {user_data[user_id].get('order', 'Не указан')}\n"
-        f"🚚 Доставка: {user_data[user_id].get('delivery', 'Не указана')}\n"
-        f"🏠 Адрес: {user_data[user_id]['address']}"
-    )
-
-    # Отправляем админу
-    await bot.send_message(chat_id=ADMIN_ID, text=order_text)
-    await message.answer("✅ Дякую! Замовлення прийнято! Незабаром підтвердимо замовлення, та скинемо Вам рахунок на оплату.")
-
-# Запуск бота
-async def main():
-    await bot.delete_webhook(drop_pending_updates=True)
-    await dp.start_polling(bot)
-
-if __name__ == "__main__":
-    asyncio.run(main())
+        f"🏢 Компанія: {user_data[user_id].get('company', 'Не вказана')}\n"
+        f"☕ 
