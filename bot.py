@@ -70,7 +70,7 @@ async def get_order(message: types.Message):
 @dp.message(lambda message: message.text in ["Рабен", "Нова Пошта"])
 async def get_delivery(message: types.Message):
     user_data[message.from_user.id]['delivery'] = message.text
-    await message.answer("Пропишіть адресу доставки (місто, вулиця, номер дому, або відділення Нової Пошти)")
+    await message.answer("Пропишіть адресу доставки (місто, вулиця, номер дому, або відділення Нової Пошти, номер телефону та ПІБ отримувача)")
 
 # Получение адреса и отправка админу
 @dp.message()
@@ -86,8 +86,11 @@ async def get_address(message: types.Message):
 
     # Формируем текст заказа
     order_text = (
-        f"📌 Нове замовлення #{order_number}\n"
-        f"📞 Телефон: {user_data[user_id].get('phone', 'Не указан')}\n"
-        f"💳 Оплата: {user_data[user_id].get('payment', 'Не указана')}\n"
-        f"🏢 Компанія: {user_data[user_id].get('company', 'Не вказана')}\n"
-        f"☕ 
+    f"📌 Нове замовлення #{order_number}\n"
+    f"📞 Телефон покупця: {user_data[user_id].get('phone', 'Не указан')}\n"
+    f"💳 Спосіб оплати: {user_data[user_id].get('payment', 'Не указана')}\n"
+    f"🏢 Дані для рахунку: {user_data[user_id].get('company', 'Не вказана')}\n"
+    f"☕ Замовлення: {user_data[user_id].get('order', 'Не указан')}\n"
+    f"🚚 Доставка: {user_data[user_id].get('delivery', 'Не указана')}\n"
+    f"🏠 Адреса: {user_data[user_id]['address']}"
+) 
