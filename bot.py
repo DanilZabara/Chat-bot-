@@ -51,13 +51,13 @@ async def get_phone(message: types.Message):
 @dp.message(lambda message: message.text in ["ФОП", "ТОВ"])
 async def get_payment_type(message: types.Message):
     user_data[message.from_user.id]['payment'] = message.text
-    await message.answer("Напишіть, на кого виставити рахунок (назва компанії або ПІБ)")
+    await message.answer("Напишіть, на кого виставити рахунок (повна назва компанії)")
 
 # Получаем название компании
 @dp.message(lambda message: message.text and message.from_user.id in user_data and 'payment' in user_data[message.from_user.id])
 async def get_company_name(message: types.Message):
     user_data[message.from_user.id]['company'] = message.text
-    await message.answer("Яку каву бажаєте замовити? Пропишіть назву та кількість зерна в кг. (приклад: 'Бразилія Черадо - 2 кг')")
+    await message.answer("Яку каву бажаєте замовити? Пропишіть назву та кількість зерна в кг. (приклад: 'Бразилія Черадо 2 кг')")
 
 # Получаем заказ
 @dp.message(lambda message: "-" in message.text)
